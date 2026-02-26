@@ -10,6 +10,6 @@ It's designed to be kind of like a text labyrinth game where you decide where to
 * .NET
 
 # Running the project
-Go into the main directory and run dotnet run in your console
+Go into the main directory and run `dotnet run` in your console
 or
 open .sln file in vs code and run it
