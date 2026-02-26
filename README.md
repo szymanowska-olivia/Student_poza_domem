@@ -1,4 +1,4 @@
-# Student_poza_domem
+# Student poza domem / Freshman on their own
 .NET Text Adventure Game where you become a newly arrived student. You stand before your dormitory wondering whether to go in when 3 fascinating persons come up to you, choose one main quest to complete through the game...
 
 # About the game
