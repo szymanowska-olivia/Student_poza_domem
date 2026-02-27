@@ -9,7 +9,7 @@ It's designed to be kind of like a text labyrinth game where you decide where to
 * OOP
 * .NET
 
-#Features
+# Features
 * Designed and implemented object-oriented game architecture (Player, NPCs, Creatures, Items)
 
 * Developed room navigation system with interactive doors and locations
