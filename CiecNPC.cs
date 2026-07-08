@@ -1,11 +1,13 @@
+#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Linq;
 public class CiecNPC : DialogueNPC
 {
     public CiecNPC(string name, string dialogueText,
-    List<Quest>? quests = null,
+    System.Collections.Generic.List<Quest>? quests = null,
     string[]? responses = null,
-    List<Item>? offeredItems = null,
+    System.Collections.Generic.List<Item>? offeredItems = null,
     Room? currentRoom = null,
     Item? requiredItem = null,
     Item? rewardItem = null)

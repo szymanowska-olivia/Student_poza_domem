@@ -1,5 +1,7 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq; 
 
 
 public class Player
@@ -17,29 +19,40 @@ public class Player
 
     public Player(Room? startingRoom, Game gamee)
     {
+        game = gamee;
+        Inventory = new List<Item>();
+
         if (startingRoom == null)
         {
             Console.WriteLine("Nizenany pokój\n");
             return;
         }
         CurrentRoom = startingRoom;
-        game = gamee;
-        Inventory = new List<Item>();
     }
 
     public void MoveTo(Room? room, Player player)
     {
         CurrentRoom = room;
-        Console.WriteLine($"Wszedłeś do pomieszczenia {room.Name}\n");
-        Console.WriteLine(room.Describe(player));
-        foreach (var npc in player.CurrentRoom.NPCs)
+        if (room != null)
         {
-            InteractWith(npc);
-        }
+            Console.WriteLine($"Wszedłeś do pomieszczenia {room.Name}\n");
+            Console.WriteLine(room.Describe(player));
+            if (player.CurrentRoom != null)
+            {
+                foreach (var npc in player.CurrentRoom.NPCs)
+                {
+                    InteractWith(npc);
+                }
 
-        if (player.CurrentRoom.CreatureInRoom != null)
+                if (player.CurrentRoom.CreatureInRoom != null)
+                {
+                    player.CurrentRoom.CreatureInRoom.Interact(player, player.CurrentRoom, game);
+                }
+            }
+        }
+        else
         {
-            player.CurrentRoom.CreatureInRoom.Interact(player, CurrentRoom, game);
+            Console.WriteLine("Nie wybrano poprawnego pomieszczenia.\n");
         }
     }
 
@@ -61,6 +74,12 @@ public class Player
 
     public void TakeItem(string itemName)
     {
+        if (CurrentRoom == null)
+        {
+            Console.WriteLine("Nie znajdujesz się w żadnym pomieszczeniu.\n");
+            return;
+        }
+
         var item = CurrentRoom.Items.FirstOrDefault(i => i.Name.Equals(itemName, StringComparison.OrdinalIgnoreCase));
         if (item != null)
         {

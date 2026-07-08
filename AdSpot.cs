@@ -1,6 +1,10 @@
+#nullable enable
+using System;
+using System.Linq;
+
 public class AdSpot : InteractiveObject
 {
-    public Item HungAd { get; private set; } = null;
+    public Item? HungAd { get; private set; } = null;
 
     public AdSpot() : base("Pusta ściana...","Na prawdę pusta")
     {

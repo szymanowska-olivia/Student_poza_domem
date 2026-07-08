@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -299,20 +300,26 @@ using System.Collections.Generic;
 
         private void InitializePlayer()
         {
-        // Gracz zaczyna przed akademikiem
-        if (Rooms.TryGetValue("Przed akademikiem", out var startRoom))
-        {
-            Player = new Player(startRoom, this);
-            //Player.CurrentRoom.Display();
-            Console.WriteLine(Player.CurrentRoom.Describe(Player));
-            foreach (var npc in Player.CurrentRoom.NPCs)
+            // Gracz zaczyna przed akademikiem
+            if (Rooms.TryGetValue("Przed akademikiem", out var startRoom))
             {
-                npc.TalkTo(Player);
+                Player = new Player(startRoom, this);
+                //Player.CurrentRoom.Display();
+                if (Player.CurrentRoom != null)
+                {
+                    Console.WriteLine(Player.CurrentRoom.Describe(Player));
+                    foreach (var npc in Player.CurrentRoom.NPCs)
+                    {
+                        npc.TalkTo(Player);
+                    }
+                }
+                else
+                {
+                    throw new Exception("Player.CurrentRoom is null after initialization.");
+                }
             }
-
-        }
-        else
-            throw new Exception("Brak pokoju startowego: 'Przed akademikiem'");
+            else
+                throw new Exception("Brak pokoju startowego: 'Przed akademikiem'");
             
         }
 
@@ -339,28 +346,28 @@ using System.Collections.Generic;
                 {
                      
                     new Quest("Odetkaj zlew", "Odetkaj zlew w module G", player =>
-                    player.CurrentRoom.Objects.Any(obj =>
-                    obj.Name == "Zlew" && !obj.GetState<bool>("zatkany"))),
+                    player.CurrentRoom?.Objects.Any(obj =>
+                    obj.Name == "Zlew" && !obj.GetState<bool>("zatkany")) ?? false),
                 
     
                     new Quest("Wymień syfon", "Wymień syfon w prysznicu w łazience J", player =>
-                    player.CurrentRoom.Objects.Any(obj =>
-                    obj.Name == "Prysznic" && !obj.GetState<bool>("zepsuty"))),
+                    player.CurrentRoom?.Objects.Any(obj =>
+                    obj.Name == "Prysznic" && !obj.GetState<bool>("zepsuty")) ?? false),
 
                     new Quest("Napraw pralkę", "Napraw pralkę w pralni", player =>
-                    player.CurrentRoom.Objects.Any(obj =>
-                    obj.Name == "Pralka 1" && obj.GetState<bool>("naprawiona"))),
+                    player.CurrentRoom?.Objects.Any(obj =>
+                    obj.Name == "Pralka 1" && obj.GetState<bool>("naprawiona")) ?? false),
 
                     new Quest("Odpowietrz grzejnik", "Odpowietrz zapowietrzony grzejnik w pokoju 203", player =>
-                    player.CurrentRoom.Objects.Any(obj =>
-                    obj.Name == "Grzejnik" && !obj.GetState<bool>("zapowietrzony")))
+                    player.CurrentRoom?.Objects.Any(obj =>
+                    obj.Name == "Grzejnik" && !obj.GetState<bool>("zapowietrzony")) ?? false)
                 };
 
                     var questsCamille = new List<Quest>
                 {
                     new Quest("Wyjmij rzeczy z pralek", "Wyjmij wszystkie rzeczy z pralek i nastaw je na długi program", player =>
-                    player.CurrentRoom.Objects.Any(obj =>
-                    (obj.Name == "Pralka 2" && !obj.GetState<bool>("program")) || (obj.Name == "Pralka 3" && !obj.GetState<bool>("program")))),
+                    player.CurrentRoom?.Objects.Any(obj =>
+                    (obj.Name == "Pralka 2" && !obj.GetState<bool>("program")) || (obj.Name == "Pralka 3" && !obj.GetState<bool>("program"))) ?? false),
 
                     new Quest("Puść muzykę", "Puść muzykę z głośników w całym budynku, Cieć chętnie ci w tym pomoże :).", player => player.MusicOn),
 
@@ -373,12 +380,12 @@ using System.Collections.Generic;
                     var questsMaja = new List<Quest>
                 {
                     new Quest("Umyj okna", "Umyj okna w pokoju 105", player =>
-                    player.CurrentRoom.Objects.Any(obj =>
-                    obj.Name == "Okna" && !obj.GetState<bool>("brudne"))),
+                    player.CurrentRoom?.Objects.Any(obj =>
+                    obj.Name == "Okna" && !obj.GetState<bool>("brudne")) ?? false),
 
                     new Quest("Wynieś śmieci", "Wynieś śmieci do zsypu", player =>
-                    player.CurrentRoom.Objects.Any(obj =>
-                    obj.Name == "Kontener na śmieci" && obj.GetState<bool>("pełny"))),
+                    player.CurrentRoom?.Objects.Any(obj =>
+                    obj.Name == "Kontener na śmieci" && obj.GetState<bool>("pełny")) ?? false),
 
                     new Quest("Pożegnaj współlokatorke", "Pożegnaj współlokatorke z pokoju 308", player =>
                     player.TalkwMaelle == true),
@@ -418,7 +425,7 @@ using System.Collections.Generic;
                     dialogueText: "Dzień dobry! Jak mogę pomóc?",
                     responses: responses,
                     currentRoom: receptionRoom,
-                    offeredItems: KeyItems ?? new List<Item>()
+                    offeredItems: KeyItems
                 );
 
                 receptionRoom.NPCs.Add(cieć);
@@ -589,10 +596,11 @@ using System.Collections.Generic;
 
             pralka.AddOption(
                 "Wyjmij przedmiot z pralki",
-                player => ((List<Item>)pralka.GetState<List<Item>>("rzeczy")).Count > 0,
+                player => (pralka.GetState<List<Item>>("rzeczy")?.Count ?? 0) > 0,
                 player =>
                 {
                     var rzeczy = pralka.GetState<List<Item>>("rzeczy");
+                    if (rzeczy == null) return;
                     Console.WriteLine("Wybierz numer przedmiotu do wyjęcia:");
                     for (int i = 0; i < rzeczy.Count; i++)
                         Console.WriteLine($"{i + 1}. {rzeczy[i].Name}");
@@ -626,7 +634,7 @@ using System.Collections.Generic;
                         var item = player.Inventory[choice - 1];
                         player.Inventory.RemoveAt(choice - 1);
                         var rzeczy = pralka.GetState<List<Item>>("rzeczy");
-                        rzeczy.Add(item);
+                        rzeczy?.Add(item);
                         Console.WriteLine($"Włożyłeś do pralki: {item.Name}");
                     }
                     else
@@ -738,7 +746,7 @@ using System.Collections.Generic;
                         if (item != null)
                         {
                             player.Inventory.Remove(item);
-                            kontener.GetState<List<Item>>("śmieci").Add(item);
+                            kontener.GetState<List<Item>>("śmieci")?.Add(item);
                             kontener.SetState("pełny", true);
                             Console.WriteLine("Wyrzuciłeś śmieci.");
                             player.CheckAllQuests();
@@ -796,10 +804,18 @@ using System.Collections.Generic;
                 smietnik.SetState("śmieci", new List<Item>());
 
                 smietnik.AddOption("Wyjmij śmieci",
-                    player => smietnik.GetState<List<Item>>("śmieci").Count > 0,
+                    player => {
+                        var smieciList = smietnik.GetState<List<Item>>("śmieci");
+                        return smieciList != null && smieciList.Count > 0;
+                    },
                     player =>
                     {
                         var smieci = smietnik.GetState<List<Item>>("śmieci");
+                        if (smieci == null || smieci.Count == 0)
+                        {
+                            Console.WriteLine("Brak śmieci do wyjęcia.");
+                            return;
+                        }
                         Console.WriteLine("Wybierz numer przedmiotu do wyjęcia:");
                         for (int i = 0; i < smieci.Count; i++)
                             Console.WriteLine($"{i + 1}. {smieci[i].Name}");
@@ -892,8 +908,11 @@ using System.Collections.Generic;
                 Console.Write("> ");
                 var input = Console.ReadLine();
                 commandHandler.HandleInput(input);
-                Player.CheckAllQuests();
-                if (Player.AllQuestsCompleted) EndGame("Ukończyłeś wszystkie questy, a tym samym całą grę!");
+                if (Player != null)
+                {
+                    Player.CheckAllQuests();
+                    if (Player.AllQuestsCompleted) EndGame("Ukończyłeś wszystkie questy, a tym samym całą grę!");
+                }
             }
         }
         public static void EndGame(string reason)

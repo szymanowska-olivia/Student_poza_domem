@@ -1,19 +1,19 @@
 using System;
 using System.Linq;
 
-public class CommandHandler
+public class CommandHandler(Game game)
 {
-    private Game game;
-    private Player player;
+    private Game game = game;
+    private Player player = game.Player ?? throw new ArgumentNullException(nameof(game.Player), "Game.Player cannot be null.");
 
-    public CommandHandler(Game game)
+    public void HandleInput(string input)
     {
-        this.game = game;
-        this.player = game.Player;
-    }
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            Console.WriteLine("Nie podano żadnej komendy.");
+            return;
+        }
 
-    public void HandleInput(string? input)
-    {
         string[] tokens = input.ToLower().Split(' ', 2);
         string command = tokens[0];
         string argument = tokens.Length > 1 ? tokens[1] : "";
@@ -57,11 +57,18 @@ public class CommandHandler
     private void MovePlayer(string direction)
     {
         Room currentRoom = player.CurrentRoom;
-        RoomConnection? connection = currentRoom.Connections.FirstOrDefault(conn => conn.Direction.ToLower() == direction.ToLower());
+        if (currentRoom == null)
+        {
+            Console.WriteLine("Nie można znaleźć bieżącego pokoju gracza.");
+            return;
+        }
+
+        RoomConnection connection = currentRoom.Connections
+            .FirstOrDefault(conn => conn.Direction.ToLower() == direction.ToLower());
+
         if (connection != null && connection.CanPass(player))
         {
             player.MoveTo(connection.TargetRoom, player);
-
         }
         else
         {
@@ -102,14 +109,21 @@ public class CommandHandler
 
     private void Zbadaj(string objectName)
     {
-        var objects = player.CurrentRoom.Objects;
+        var currentRoom = player.CurrentRoom;
+        if (currentRoom == null)
+        {
+            Console.WriteLine("Nie można znaleźć bieżącego pokoju gracza.");
+            return;
+        }
+
+        var objects = currentRoom.Objects;
         if (objects == null || objects.Count == 0)
         {
             Console.WriteLine("Nie ma tutaj żadnych obiektów do zbadania.");
             return;
         }
 
-        var obj = player.CurrentRoom.Objects.FirstOrDefault(o => o.Name.Equals(objectName, StringComparison.OrdinalIgnoreCase));
+        var obj = objects.FirstOrDefault(o => o.Name.Equals(objectName, StringComparison.OrdinalIgnoreCase));
 
         if (obj != null)
         {
@@ -126,6 +140,12 @@ public class CommandHandler
         if (string.IsNullOrWhiteSpace(itemName))
         {
             Console.WriteLine("Musisz podać nazwę przedmiotu do podniesienia.");
+            return;
+        }
+
+        if (player.CurrentRoom == null)
+        {
+            Console.WriteLine("Nie można znaleźć bieżącego pokoju gracza.");
             return;
         }
 

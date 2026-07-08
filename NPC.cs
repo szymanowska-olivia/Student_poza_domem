@@ -1,15 +1,15 @@
+#nullable enable
 using System.Collections.Generic;
 using System.Linq;
 using System;
 
-
-    public class NPC
-    {
-        public string Name { get; private set; }
-        protected List<Quest>? Quests;
-        public Room? CurrentRoom { get; private set;}
-        private List<Item>? GivenItems;   
-        public NPC(string name, List<Quest>? quests = null, Room? currentRoom = null, List<Item>? givenItems = null)
+public class NPC
+{
+    public string Name { get; private set; }
+    protected List<Quest> Quests;
+    public Room? CurrentRoom { get; private set; }
+    private List<Item> GivenItems;
+    public NPC(string name, List<Quest>? quests = null, Room? currentRoom = null, List<Item>? givenItems = null)
     {
         Name = name;
         Quests = quests ?? new List<Quest>();
@@ -17,32 +17,32 @@ using System;
         GivenItems = givenItems ?? new List<Item>();
     }
 
-        public virtual void TalkTo(Player player)
+    public virtual void TalkTo(Player player)
+    {
+        Console.WriteLine($"{Name} mówi: Cześć! Możesz ze mną porozmawiać.\n");
+
+        // Daj przedmioty (jeśli jeszcze ich nie masz)
+
+        if (Quests == null || Quests.Count == 0)
         {
-            Console.WriteLine($"{Name} mówi: Cześć! Możesz ze mną porozmawiać.\n");
+            Console.WriteLine("Nie mam dla ciebie żadnych zadań.");
+            return;
+        }
 
-            // Daj przedmioty (jeśli jeszcze ich nie masz)
+        if (!player.CanAcceptQuestsFrom(Name))
+        {
+            Console.WriteLine($"Ale ty przyjąłeś już zadania od innego NPC i nie możesz przyjąć kolejnych, więc sobie nie pogadacie.");
+            return;
+        }
 
-            if (Quests.Count == 0)
-            {
-                Console.WriteLine("Nie mam dla ciebie żadnych zadań.");
-                return;
-            }
+        Console.WriteLine("Mam dla ciebie kilka zadań:");
+        foreach (var quest in Quests)
+        {
+            Console.WriteLine($"- {quest.Name} - {quest.Description}");
+        }
 
-            if (!player.CanAcceptQuestsFrom(Name))
-            {
-                Console.WriteLine($"Ale ty przyjąłeś już zadania od innego NPC i nie możesz przyjąć kolejnych, więc sobie nie pogadacie.");
-                return;
-            }
-
-            Console.WriteLine("Mam dla ciebie kilka zadań:");
-            foreach (var quest in Quests)
-            {
-                Console.WriteLine($"- {quest.Name} - {quest.Description}");
-            }
-
-            Console.Write("Czy chcesz przyjąć wszystkie te zadania? (tak/nie): ");
-            string? input = Console.ReadLine()?.Trim().ToLower();
+        Console.Write("Czy chcesz przyjąć wszystkie te zadania? (tak/nie): ");
+        string? input = Console.ReadLine()?.Trim().ToLower();
 
         if (input == "tak")
         {
@@ -69,11 +69,11 @@ using System;
         {
             Console.WriteLine("Nie przyjąłeś żadnych zadań.");
         }
-        }
-
-        public List<Quest> GetAvailableQuests()
-        {
-            return Quests.Where(q => !q.IsComplete()).ToList();
-        }
     }
+
+    public List<Quest> GetAvailableQuests()
+    {
+        return (Quests ?? new List<Quest>()).Where(q => !q.IsComplete()).ToList();
+    }
+}
 
