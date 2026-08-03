@@ -19,8 +19,6 @@ It's designed to be kind of like a text labyrinth game where you decide where to
 
 * Created quest system with NPC dialogues and task progression
 
-* Added game state persistence (save/load functionality)
-
 * Unit testing to validate core game mechanics and ensure code reliability
 
 # Testing Overview
